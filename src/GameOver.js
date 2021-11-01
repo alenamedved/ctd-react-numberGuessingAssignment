@@ -7,7 +7,7 @@ function GameOver({ hasWon, onReset }) {
       {!hasWon && (
         <h2>You didn't guess my number. Would you like to try again?</h2>
       )}
-      <Button onClick={onReset}>Play Again!</Button>
+      <Button onClick={onReset} >Play Again!</Button>
     </div>
   );
 }

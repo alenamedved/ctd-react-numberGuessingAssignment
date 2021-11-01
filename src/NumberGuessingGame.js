@@ -1,10 +1,9 @@
-import React, { Component } from "react";
+import React, { useEffect, useReducer } from "react";
 import GuessControl from "./GuessControl";
 import GuessMessage from "./GuessMessage";
 import GameOver from "./GameOver";
-
+import gameReducer from "./gameReducer";
 /**
- *
  * Returns a random integer number from 1-100 inclusive
  */
 function getRandomNumber() {
@@ -13,65 +12,63 @@ function getRandomNumber() {
 
 const MAX_ATTEMPTS = 5;
 
-class NumberGuessingGame extends Component {
-  constructor(props) {
-    super(props);
+function NumberGuessingGame() {
+  const [gameState, dispatcher] = useReducer(gameReducer, {
+    numberToGuess: getRandomNumber(),
+    numberOfGuesses: 0,
+    latestGuess: null,
+  });
 
-    this.state = {
-      numberToGuess: getRandomNumber(),
-      numberOfGuesses: 0,
-      latestGuess: null,
-    };
+  useEffect(() => {
+    console.log('inside useEffect')
+    dispatcher({
+      type: "INIT",
+      payload: getRandomNumber(),
+    });
+  }, []);
 
-    /**
-     * These lines are required to make the methods/functions declared on this
-     *  class have the correct `this` object when they run.
-     */
-    this.handleGuess = this.handleGuess.bind(this);
-    this.handleReset = this.handleReset.bind(this);
-  }
-
-  handleGuess(guess) {
-    this.setState({
-      latestGuess: guess,
-      numberOfGuesses: this.state.numberOfGuesses + 1,
+  function handleGuess(guess) {
+    dispatcher({
+      type: "HANDLE_GUESS",
+      payload: guess,
     });
   }
 
-  handleReset() {
-    this.setState({
-      numberToGuess: getRandomNumber(),
-      numberOfGuesses: 0,
-      latestGuess: null,
+  function handleReset() {
+    dispatcher({
+      type: "RESET",
+      payload: getRandomNumber(),
     });
   }
 
-  render() {
-    const isCorrectGuess = this.state.latestGuess === this.state.numberToGuess;
-
-    const isGameOver =
-      isCorrectGuess || this.state.numberOfGuesses === MAX_ATTEMPTS;
-
-    return (
-      <div>
-        <h2>I'm thinking of a number from 1 to 100.</h2>
-        <h2>
-          Can you guess the number I am thinking of in {MAX_ATTEMPTS} tries?
-        </h2>
-        <GuessControl onGuess={this.handleGuess} />
-        {isGameOver && (
-          <GameOver hasWon={isCorrectGuess} onReset={this.handleReset} />
-        )}
-        {!isGameOver && (
-          <GuessMessage
-            guess={this.state.latestGuess}
-            numberToGuess={this.state.numberToGuess}
-            numberOfGuesses={this.state.numberOfGuesses}
-          />
-        )}
-      </div>
-    );
-  }
+  const isCorrectGuess = gameState.latestGuess === gameState.numberToGuess;
+  const isGameOver =
+    isCorrectGuess || gameState.numberOfGuesses === MAX_ATTEMPTS;
+  const submitButtonDisabled = isGameOver;
+  console.log(gameState.numberToGuess)
+  return (
+    <div>
+      <h2>I'm thinking of a number from 1 to 100.</h2>
+      <h2>
+        Can you guess the number I am thinking of in {MAX_ATTEMPTS} tries?
+      </h2>
+      <GuessControl onGuess={handleGuess} disabled={submitButtonDisabled} />
+      {isGameOver && (
+        <GameOver
+          hasWon={isCorrectGuess}
+          onReset={handleReset}
+          disabled={submitButtonDisabled}
+        />
+      )}
+      {!isGameOver && (
+        <GuessMessage
+          guess={gameState.latestGuess}
+          numberToGuess={gameState.numberToGuess}
+          numberOfGuesses={gameState.numberOfGuesses}
+        />
+      )}
+    </div>
+  );
 }
 
 export default NumberGuessingGame;
