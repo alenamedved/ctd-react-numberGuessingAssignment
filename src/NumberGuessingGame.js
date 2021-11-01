@@ -20,7 +20,7 @@ function NumberGuessingGame() {
   });
 
   useEffect(() => {
-    console.log('inside useEffect')
+    /* console.log('inside useEffect') */
     dispatcher({
       type: "INIT",
       payload: getRandomNumber(),
